@@ -1,4 +1,9 @@
 ---
+- name: Set up hosts files
+  hosts: all
+  roles:
+    - barkingiguana.hosts
+
 - name: Set up routers
   hosts: routers
   roles:
