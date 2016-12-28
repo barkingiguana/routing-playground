@@ -1,0 +1,9 @@
+[routers]
+router_a
+router_b
+router_c
+
+[hosts]
+host_a
+host_b
+host_c

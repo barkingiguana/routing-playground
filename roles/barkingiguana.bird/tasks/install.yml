@@ -1,0 +1,5 @@
+---
+- name: Install bird
+  become: yes
+  package:
+    name: bird

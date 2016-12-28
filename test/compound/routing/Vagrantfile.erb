@@ -1,0 +1,41 @@
+Vagrant.configure(2) do |config|
+  config.vm.box = "bento/ubuntu-16.10"
+  config.vm.box_check_update = false
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "256"
+  end
+
+  <% hosts.each do |host|
+    network_name = host.name.split('-', 2)[-1]
+    network_number = network_name.ord
+  %>
+  config.vm.define "<%= host.name %>" do |this|
+    this.vm.hostname = "<%= host.name %>"
+    # Management network, so Ansible on my computer can talk to the VMs:
+    this.vm.network "private_network", ip: "<%= host.ip_address %>"
+    <% if host.name =~ /^host-/ %>
+    # Internal network, hosts behind the routers, which we'll use for testing
+    # connectivity via the routers:
+    this.vm.network "private_network", ip: "10.8.<%= network_number %>.100", virtualbox__intnet: "network-<%= network_name %>"
+    <% else %>
+    # Connectivity from the router to the network it routes to/from:
+    this.vm.network "private_network", ip: "10.8.<%= network_number %>.1", virtualbox__intnet: "network-<%= network_name %>"
+    # Connections between routers:
+    <% if host.name == 'router-a' %>
+    this.vm.network "private_network", ip: "192.168.1.1", virtualbox__intnet: "a-to-b"
+    this.vm.network "private_network", ip: "192.168.2.1", virtualbox__intnet: "a-to-c"
+    <% elsif host.name == 'router-b' %>
+    this.vm.network "private_network", ip: "192.168.1.2", virtualbox__intnet: "a-to-b"
+    this.vm.network "private_network", ip: "192.168.3.1", virtualbox__intnet: "b-to-c"
+    <% elsif host.name == 'router-c' %>
+    this.vm.network "private_network", ip: "192.168.2.2", virtualbox__intnet: "a-to-c"
+    this.vm.network "private_network", ip: "192.168.3.2", virtualbox__intnet: "b-to-c"
+    <% end %>
+    <% end %>
+  end
+  <% end %>
+
+  config.ssh.username   = "vagrant"
+  config.ssh.password   = "vagrant"
+  config.ssh.insert_key = false
+end

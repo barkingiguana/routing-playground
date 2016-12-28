@@ -1,0 +1,52 @@
+{{ ansible_managed | comment }}
+
+filter out_loopback1 {
+  {% for route in bird_carry_routes %}
+  if (net = {{ route.cidr }}) then
+  {
+    bgp_community.empty;
+    bgp_path.prepend({{ route.as_number | default(bird_as_number) }});
+    accept;
+  }
+  {% endfor %}
+  else reject;
+}
+
+router id {{ bird_router_id }};
+
+protocol kernel {
+    persist;
+    scan time 20;
+    export all;
+    import all;
+}
+
+protocol device {
+    scan time 10;
+}
+
+protocol static {
+}
+
+{% for route in bird_carry_routes %}
+protocol direct {
+  interface "{{ route.interface }}";
+}
+{% endfor %}
+
+{% for neighbor in bird_neighbors %}
+protocol bgp BGPAS{{ neighbor.remote_as_number }} {
+  add paths on;
+  debug all;
+  description "BGP to AS{{ neighbor.remote_as_number }}";
+  next hop self;
+  route limit 50000;
+  default bgp_local_pref 300;
+  import all;
+  export filter out_loopback1;
+  neighbor {{ neighbor.remote_ip_address }} as {{ neighbor.remote_as_number }};
+  local {{ neighbor.local_ip_address }} as {{ neighbor.local_as_number | default(bird_as_number) }};
+  source address {{ neighbor.local_ip_address }};
+};
+
+{% endfor %}

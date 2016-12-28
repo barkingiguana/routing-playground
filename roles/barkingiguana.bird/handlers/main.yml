@@ -1,0 +1,8 @@
+---
+- name: reload sysctl
+  become: yes
+  shell: sysctl -p
+
+- name: restart bird
+  become: yes
+  shell: /etc/init.d/bird restart

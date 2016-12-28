@@ -1,0 +1,5 @@
+---
+- name: Manage routers
+  hosts: routers
+  roles:
+    - barkingiguana.bird

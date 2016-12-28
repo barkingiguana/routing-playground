@@ -1,0 +1,6 @@
+---
+bird_router_id: "{{ ansible_default_ipv4.address }}"
+bird_neighbors:
+  { ip_address: '127.0.0.1', as_number: 12345 }
+bird_carry_routes:
+  - { cidr: "{{ ansible_default_ipv4.network }}", as_number: 12345, interface: "{{ ansible_default_ipv4.interface }}" }
