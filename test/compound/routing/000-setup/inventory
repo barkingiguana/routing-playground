@@ -3,8 +3,3 @@ router_a
 router_b
 router_c
 router_d
-
-[hosts]
-host_a
-host_b
-host_c

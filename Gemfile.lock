@@ -7,7 +7,7 @@ GEM
       serverspec (>= 2.0.0)
       winrm
     barking_iguana-benchmark (0.1.0)
-    barking_iguana-compound (0.1.4)
+    barking_iguana-compound (0.1.5)
       ansible_spec
       barking_iguana-benchmark
       barking_iguana-logging
@@ -91,7 +91,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  barking_iguana-compound (= 0.1.4)
+  barking_iguana-compound (= 0.1.5)
   rake
 
 BUNDLED WITH

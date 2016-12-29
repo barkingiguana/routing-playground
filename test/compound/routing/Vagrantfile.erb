@@ -1,9 +1,13 @@
 Vagrant.configure(2) do |config|
+  config.ssh.insert_key = false
+  config.ssh.password   = "vagrant"
+  config.ssh.username   = "vagrant"
   config.vm.box = "bento/ubuntu-16.10"
   config.vm.box_check_update = false
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "256"
   end
+  config.vm.synced_folder ".", "/vagrant", disabled: true
 
   <% hosts.each do |host|
     network_name = host.name.split('-', 2)[-1]
@@ -13,6 +17,15 @@ Vagrant.configure(2) do |config|
     this.vm.hostname = "<%= host.name %>"
     # Management network, so Ansible on my computer can talk to the VMs:
     this.vm.network "private_network", ip: "<%= host.ip_address %>"
+    # TODO: Let us use the nice `vagrant ssh <%= host.name %>` shortcuts.
+    #   this.ssh.host = "<%= host.ip_address %>"
+    #   this.ssh.guest_port = 22
+    #   this.ssh.port = 22
+    # The problem with that is, Vagrant needs to ssh in to the box on first boot
+    # so that it can set up the management network. After that we can access it
+    # with the above settings, I think. Until I fix that, print a message:
+    this.vm.post_up_message = "You can access <%= host.name %> like this:\n" + \
+    "  ssh -l <%= host.ssh_username %> <%= host.ip_address %>"
     <% if host.name =~ /^host-/ %>
     # Internal network, hosts behind the routers, which we'll use for testing
     # connectivity via the routers:
@@ -24,18 +37,17 @@ Vagrant.configure(2) do |config|
     <% if host.name == 'router-a' %>
     this.vm.network "private_network", ip: "192.168.1.1", virtualbox__intnet: "a-to-b"
     this.vm.network "private_network", ip: "192.168.2.1", virtualbox__intnet: "a-to-c"
+    this.vm.network "private_network", ip: "192.168.4.1", virtualbox__intnet: "a-to-d"
     <% elsif host.name == 'router-b' %>
     this.vm.network "private_network", ip: "192.168.1.2", virtualbox__intnet: "a-to-b"
     this.vm.network "private_network", ip: "192.168.3.1", virtualbox__intnet: "b-to-c"
     <% elsif host.name == 'router-c' %>
     this.vm.network "private_network", ip: "192.168.2.2", virtualbox__intnet: "a-to-c"
     this.vm.network "private_network", ip: "192.168.3.2", virtualbox__intnet: "b-to-c"
+    <% elsif host.name == 'router-d' %>
+    this.vm.network "private_network", ip: "192.168.4.2", virtualbox__intnet: "a-to-d"
     <% end %>
     <% end %>
   end
   <% end %>
-
-  config.ssh.username   = "vagrant"
-  config.ssh.password   = "vagrant"
-  config.ssh.insert_key = false
 end

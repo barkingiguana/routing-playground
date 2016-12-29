@@ -1,5 +1,4 @@
 ---
-bird_router_id: 10.8.99.1
 bird_as_number: 64783
 bird_neighbors:
   - router_a:
@@ -10,5 +9,3 @@ bird_neighbors:
     local_ip_address: 192.168.3.2
     remote_ip_address: 192.168.3.1
     remote_as_number: 64782
-bird_carry_routes:
-  - { cidr: '10.8.99.0/24', interface: 'enp0s9' }

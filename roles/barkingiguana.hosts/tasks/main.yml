@@ -1,4 +1,7 @@
 ---
+- name: DEBUG
+  debug:
+    var: groups['all']
 - name: Configure /etc/hosts
   become: yes
   template:

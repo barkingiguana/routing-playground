@@ -1,26 +1,15 @@
 ---
-- name: Set up hosts files
-  hosts: all
-  roles:
-    - barkingiguana.hosts
-
 - name: Set up routers
   hosts: routers
   roles:
+    - barkingiguana.hosts
     - barkingiguana.bird
-
-- name: Set up hosts
-  hosts: hosts
   tasks:
-    - name: Remove default VirtualBox NAT gateway
+    - name: Manage default gateway
       become: yes
-      shell: "ip route del 10.0.2.0/24 dev enp0s3"
-    - name: Calculate correct gateway IP
-      set_fact:
-        gateway_ip: "{{ ansible_enp0s9.ipv4.address.split('.')[0:3] | join('.') }}.1"
-    - name: Remove default gateway
-      become: yes
-      shell: "ip route del default via 10.0.2.2 dev enp0s3"
-    - name: Route through the correct gateway
-      become: yes
-      shell: "ip route add default via {{ gateway_ip }} dev enp0s9"
+      ignore_errors: yes
+      shell: "{{ item }}"
+      when: "{{ remove_default_gateway }}"
+      with_items:
+        - "ip route del 10.0.2.0/24 dev enp0s3"
+        - "ip route del default via 10.0.2.2 dev enp0s3"

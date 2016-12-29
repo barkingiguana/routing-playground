@@ -1,0 +1,6 @@
+---
+bird_router_id: "{{ ansible_enp0s9.ipv4.address }}"
+bird_carry_static_routes:
+  - my_network:
+    cidr: "{{ (ansible_enp0s9.ipv4.network ~ '/' ~ ansible_enp0s9.ipv4.netmask) | ipaddr('net') }}"
+    via: enp0s9

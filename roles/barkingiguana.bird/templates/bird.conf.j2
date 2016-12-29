@@ -1,49 +1,64 @@
 {{ ansible_managed | comment }}
 
-filter out_loopback1 {
-  {% for route in bird_carry_routes %}
-  if (net = {{ route.cidr }}) then
-  {
-    bgp_community.empty;
-    bgp_path.prepend({{ route.as_number | default(bird_as_number) }});
-    accept;
-  }
-  {% endfor %}
-  else reject;
-}
-
 router id {{ bird_router_id }};
 
 protocol kernel {
-    persist;
-    scan time 20;
-    export all;
-    import all;
+  persist;
+  scan time 20;
+  export all;
+  import all;
 }
 
 protocol device {
-    scan time 10;
+  scan time 10;
 }
 
 protocol static {
-}
-
-{% for route in bird_carry_routes %}
-protocol direct {
-  interface "{{ route.interface }}";
-}
+{% for route in bird_carry_static_routes %}
+  route {{ route.cidr }} via {{ route.via.split('%')[0] | ipaddr | ternary(route.via, '"' ~ route.via ~ '"') }};
 {% endfor %}
+}
 
 {% for neighbor in bird_neighbors %}
-protocol bgp BGPAS{{ neighbor.remote_as_number }} {
+filter BGPAS{{ neighbor.remote_as_number }}_import_filter {
+  accept;
+}
+
+{% endfor %}
+{% for neighbor in bird_neighbors %}
+filter BGPAS{{ neighbor.remote_as_number }}_export_filter {
+  if source = RTS_STATIC then {
+    bgp_community.empty;
+    bgp_path.prepend({{ neighbor.local_as_number | default(bird_as_number) }});
+    accept;
+  }
+
+  if source = RTS_STATIC_DEVICE then {
+    bgp_community.empty;
+    bgp_path.prepend({{ neighbor.local_as_number | default(bird_as_number) }});
+    accept;
+  }
+
+  if source = RTS_BGP then {
+    bgp_community.empty;
+    bgp_path.prepend({{ neighbor.local_as_number | default(bird_as_number) }});
+    accept;
+  }
+
+  reject;
+}
+
+{% endfor %}
+template bgp BGP_default_template {
   add paths on;
   debug all;
-  description "BGP to AS{{ neighbor.remote_as_number }}";
-  next hop self;
-  route limit 50000;
   default bgp_local_pref 300;
-  import all;
-  export filter out_loopback1;
+}
+{% for neighbor in bird_neighbors %}
+protocol bgp BGPAS{{ neighbor.remote_as_number }} from BGP_default_template {
+  description "BGP to AS{{ neighbor.remote_as_number }}";
+  import filter BGPAS{{ neighbor.remote_as_number }}_import_filter;
+  export filter BGPAS{{ neighbor.remote_as_number }}_export_filter;
   neighbor {{ neighbor.remote_ip_address }} as {{ neighbor.remote_as_number }};
   local {{ neighbor.local_ip_address }} as {{ neighbor.local_as_number | default(bird_as_number) }};
   source address {{ neighbor.local_ip_address }};
