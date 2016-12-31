@@ -6,17 +6,17 @@
     name: /etc/sysctl.conf
   notify: reload sysctl
   with_items:
-    - "net.ipv4.conf.all.forwarding=1"
-    - "net.ipv4.conf.default.forwarding=1"
-    #- "net.ipv6.conf.all.forwarding=1"
-    #- "net.ipv6.conf.default.forwarding=1"
+    #- "net.ipv4.conf.all.forwarding=1"
+    #- "net.ipv4.conf.default.forwarding=1"
+    - "net.ipv6.conf.all.forwarding=1"
+    - "net.ipv6.conf.default.forwarding=1"
 
 - name: Configure bird
   become: yes
   template:
     src: bird.conf.j2
-    dest: /etc/bird/bird.conf
+    dest: /etc/bird/bird6.conf
     mode: 'u=wr,go='
     owner: bird
     group: bird
-  notify: restart bird
+  notify: restart bird6

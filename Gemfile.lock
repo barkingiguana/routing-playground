@@ -1,12 +1,6 @@
-GEM
-  remote: https://rubygems.org/
+PATH
+  remote: ../compound
   specs:
-    ansible_spec (0.2.16)
-      hostlist_expression
-      oj
-      serverspec (>= 2.0.0)
-      winrm
-    barking_iguana-benchmark (0.1.0)
     barking_iguana-compound (0.1.5)
       ansible_spec
       barking_iguana-benchmark
@@ -16,6 +10,16 @@ GEM
       mixlib-shellout
       oj
       rspec-wait
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ansible_spec (0.2.16)
+      hostlist_expression
+      oj
+      serverspec (>= 2.0.0)
+      winrm
+    barking_iguana-benchmark (0.1.0)
     barking_iguana-logging (0.1.5)
       barking_iguana-otk
       term-ansicolor
@@ -91,7 +95,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  barking_iguana-compound (= 0.1.5)
+  barking_iguana-compound!
   rake
 
 BUNDLED WITH

@@ -2,13 +2,6 @@
 bird_as_number: 64784
 bird_neighbors:
   - router_a:
-    local_ip_address: 192.168.4.2
-    remote_ip_address: 192.168.4.1
+    local_ip_address: fda9:2c81:58a7:5de4:cafe:a2d::d
+    remote_ip_address: fda9:2c81:58a7:5de4:cafe:a2d::a
     remote_as_number: 64781
-bird_carry_static_routes:
-  - my_network:
-    cidr: "{{ (ansible_enp0s9.ipv4.network ~ '/' ~ ansible_enp0s9.ipv4.netmask) | ipaddr('net') }}"
-    via: enp0s9
-  - internet:
-    cidr: "0.0.0.0/0"
-    via: 10.0.2.2%enp0s3

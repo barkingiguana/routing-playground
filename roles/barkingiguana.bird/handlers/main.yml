@@ -3,6 +3,6 @@
   become: yes
   shell: sysctl -p
 
-- name: restart bird
+- name: restart bird6
   become: yes
-  shell: /etc/init.d/bird restart
+  shell: /etc/init.d/bird6 restart

@@ -10,8 +10,8 @@ Vagrant.configure(2) do |config|
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
   <% hosts.each do |host|
-    network_name = host.name.split('-', 2)[-1]
-    network_number = network_name.ord
+    network_prefix = "fda9:2c81:58a7:5de4"
+    local_network = "#{network_prefix}:bed:#{host.name.split('-', 2)[-1]}"
   %>
   config.vm.define "<%= host.name %>" do |this|
     this.vm.hostname = "<%= host.name %>"
@@ -29,23 +29,43 @@ Vagrant.configure(2) do |config|
     <% if host.name =~ /^host-/ %>
     # Internal network, hosts behind the routers, which we'll use for testing
     # connectivity via the routers:
-    this.vm.network "private_network", ip: "10.8.<%= network_number %>.100", virtualbox__intnet: "network-<%= network_name %>"
+    this.vm.network "private_network", ip: "<%= local_network %>::100",
+      type: "static6", netmask: "96",
+      virtualbox__intnet: "<%= local_network %>::/96"
     <% else %>
     # Connectivity from the router to the network it routes to/from:
-    this.vm.network "private_network", ip: "10.8.<%= network_number %>.1", virtualbox__intnet: "network-<%= network_name %>"
+    this.vm.network "private_network", ip: "<%= local_network %>::",
+      type: "static6", netmask: "96",
+      virtualbox__intnet: "<%= local_network %>::/96"
     # Connections between routers:
     <% if host.name == 'router-a' %>
-    this.vm.network "private_network", ip: "192.168.1.1", virtualbox__intnet: "a-to-b"
-    this.vm.network "private_network", ip: "192.168.2.1", virtualbox__intnet: "a-to-c"
-    this.vm.network "private_network", ip: "192.168.4.1", virtualbox__intnet: "a-to-d"
+    this.vm.network "private_network", ip: "<%= network_prefix %>:cafe:a2b::a",
+      type: "static6", netmask: "112",
+      virtualbox__intnet: "a-to-b"
+    this.vm.network "private_network", ip: "<%= network_prefix %>:cafe:a2c::a",
+      type: "static6", netmask: "112",
+      virtualbox__intnet: "a-to-c"
+    this.vm.network "private_network", ip: "<%= network_prefix %>:cafe:a2d::a",
+      type: "static6", netmask: "112",
+      virtualbox__intnet: "a-to-d"
     <% elsif host.name == 'router-b' %>
-    this.vm.network "private_network", ip: "192.168.1.2", virtualbox__intnet: "a-to-b"
-    this.vm.network "private_network", ip: "192.168.3.1", virtualbox__intnet: "b-to-c"
+    this.vm.network "private_network", ip: "<%= network_prefix %>:cafe:a2b::b",
+      type: "static6", netmask: "112",
+      virtualbox__intnet: "a-to-b"
+    this.vm.network "private_network", ip: "<%= network_prefix %>:cafe:b2c::b",
+      type: "static6", netmask: "112",
+      virtualbox__intnet: "b-to-c"
     <% elsif host.name == 'router-c' %>
-    this.vm.network "private_network", ip: "192.168.2.2", virtualbox__intnet: "a-to-c"
-    this.vm.network "private_network", ip: "192.168.3.2", virtualbox__intnet: "b-to-c"
+    this.vm.network "private_network", ip: "<%= network_prefix %>:cafe:a2c::c",
+      type: "static6", netmask: "112",
+      virtualbox__intnet: "a-to-c"
+    this.vm.network "private_network", ip: "<%= network_prefix %>:cafe:b2c::c",
+      type: "static6", netmask: "112",
+      virtualbox__intnet: "b-to-c"
     <% elsif host.name == 'router-d' %>
-    this.vm.network "private_network", ip: "192.168.4.2", virtualbox__intnet: "a-to-d"
+    this.vm.network "private_network", ip: "<%= network_prefix %>:cafe:a2d::d",
+      type: "static6", netmask: "112",
+      virtualbox__intnet: "a-to-d"
     <% end %>
     <% end %>
   end

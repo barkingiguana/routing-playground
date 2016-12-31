@@ -11,14 +11,14 @@
       become: yes
       shell: "ip route del 10.0.2.0/24 dev enp0s3"
       ignore_errors: yes
-    - name: Remove default gateway
+    - name: Remove default IPv4 gateway
       become: yes
       shell: "ip route del default via 10.0.2.2 dev enp0s3"
       ignore_errors: yes
-    - name: Calculate correct gateway IP
+    - name: Calculate correct IPv6 gateway
       set_fact:
-        gateway_ip: "{{ ansible_enp0s9.ipv4.address.split('.')[0:3] | join('.') }}.1"
-    - name: Route through the correct gateway
+        gateway_ip: "{{ (ansible_enp0s9.ipv6 | selectattr('scope', 'equalto', 'global') | list | first).address.split(':')[0:6] | join(':') }}::"
+    - name: Route through the IPv6 gateway
       become: yes
-      shell: "ip route add default via {{ gateway_ip }} dev enp0s9"
+      shell: "ip -6 route add default via {{ gateway_ip }} dev enp0s9"
       ignore_errors: yes

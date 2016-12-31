@@ -2,5 +2,10 @@
 
 127.0.0.1 {{ ansible_hostname }}
 {% for host in groups['all'] %}
+{% if hostvars[host].ansible_enp0s9.ipv4 is defined %}
 {{ hostvars[host].ansible_enp0s9.ipv4.address }} {{ hostvars[host].ansible_hostname }}
+{% endif %}
+{% if hostvars[host].ansible_enp0s9.ipv6 is defined %}
+{{ (hostvars[host].ansible_enp0s9.ipv6 | selectattr("scope", "equalto", "global") | list | first).address }} {{ hostvars[host].ansible_hostname }}
+{% endif %}
 {% endfor %}
